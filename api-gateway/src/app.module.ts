@@ -5,6 +5,7 @@ import { ProxyModule } from './proxy/proxy.module';
 import { ConfigModule } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { MiddlewareModule } from './middleware/middleware.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -30,7 +31,8 @@ import { MiddlewareModule } from './middleware/middleware.module';
       },
     ]),
     ProxyModule,
-    MiddlewareModule
+    MiddlewareModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
