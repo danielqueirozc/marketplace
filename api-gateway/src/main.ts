@@ -1,8 +1,11 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import getSwaggerUiAbsoluteFSPath from 'swagger-ui-dist/absolute-path.js'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -60,14 +63,29 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build()
-
+  
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('api', app, document)
+  
+  const httpAdapter = app.getHttpAdapter()
+  const swaggerAssetsPath = getSwaggerUiAbsoluteFSPath()
+  const swaggerAssets: Record<string, string> = {
+    'swagger-ui.css': 'text/css',
+    'swagger-ui-bundle.js': 'application/javascript',
+    'swagger-ui-standalone-preset.js': 'application/javascript',
+  }
+  for (const [filename, contentType] of Object.entries(swaggerAssets)) {
+    const content = readFileSync(join(swaggerAssetsPath, filename))
+    httpAdapter.get(`/api/${filename}`, (req: unknown, res: { type: (t: string) => void, send: (b: Buffer) => void }) => {
+      res.type(contentType)
+      res.send(content)
+    })
+  }
 
   const port = process.env.PORT || 3005
 
-  await app.listen(port);
+  await app.listen(port)
 
   console.log('ta rodando')
 }
-bootstrap();
+bootstrap()
