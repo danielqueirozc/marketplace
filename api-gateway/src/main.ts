@@ -6,7 +6,22 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(helmet())
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"], // permite apenas recursos da mesma origib
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // fonte de estilo css
+        imgSrc: ["'self'", 'data:', 'https:']
+      }
+    },
+    crossOriginEmbedderPolicy: false,
+    hsts: { // forçar navegadores a usar https sempre que se conectarem com a gente
+      maxAge: 31536000, // segundos
+      includeSubDomains: true, // ex: localhost:3000/algumacoisa
+      preload: true // pre carregamento
+    }
+  }))
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
